@@ -83,7 +83,3 @@ class Executive_Assistant_Agent(BaseAgent):
         sys_prompt = sys_prompt_template.format(now=now,weather=weather,todo_items=todo_items,calender_events=calender_events)
         return sys_prompt
         
-
-agent = Executive_Assistant_Agent()
-res = agent.invoke("What's on my todo list?")
-print(res)
