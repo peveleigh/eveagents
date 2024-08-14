@@ -2,7 +2,7 @@ fastapi
 gunicorn
 homeassistant_api
 langchain
-langhchain-openai
+langchain-openai
 uvicorn
 websocket
 websocket-client
