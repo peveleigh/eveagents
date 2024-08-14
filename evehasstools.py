@@ -10,7 +10,7 @@ openai_api_key = os.getenv('OPENROUTER_API_KEY')
 hass_api_url = os.getenv('HASS_API_URL')
 openai_api_url = os.getenv('OPENROUTER_API_URL')
 
-def run_hass_service(domain,service,entity_id,data={},return_response=True):
+def run_hass_service(domain,service,entity_id,service_data={},return_response=True):
     ws = create_connection(f"ws://{hass_api_url}/websocket")
     message = {
     "type": "auth",
@@ -24,7 +24,7 @@ def run_hass_service(domain,service,entity_id,data={},return_response=True):
     "domain": f"{domain}",
     "service": f"{service}",
     "target": { "entity_id": f"{entity_id}" },
-    "service_data": data,
+    "service_data": service_data,
     "id": 1,
     "return_response": True
     }

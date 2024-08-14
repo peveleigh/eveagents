@@ -1,0 +1,13 @@
+[Unit]
+Description=Gunicorn Web Server as Unit Service Systemd
+After=network.target
+
+[Service]
+User=johndoe
+Group=johndoe
+WorkingDirectory=/home/johndoe/workspace/agents
+Environment="PATH=/home/johndoe/eveagents/.venv/bin"
+ExecStart=/home/johndoe/eveagents/.venv/bin/gunicorn -b 192.168.2.50:8000 -k uvicorn.workers.UvicornWorker server:app
+
+[Install]
+WantedBy=multi-user.target

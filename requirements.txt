@@ -1,5 +1,8 @@
+fastapi
+gunicorn
+homeassistant_api
 langchain
 langhchain-openai
-homeassistant_api
+uvicorn
 websocket
 websocket-client
