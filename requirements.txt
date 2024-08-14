@@ -3,6 +3,7 @@ gunicorn
 homeassistant_api
 langchain
 langchain-openai
+python-dotenv
 uvicorn
 websocket
 websocket-client
