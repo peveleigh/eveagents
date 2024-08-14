@@ -26,7 +26,7 @@ def run_hass_service(domain,service,entity_id,service_data={},return_response=Tr
     "target": { "entity_id": f"{entity_id}" },
     "service_data": service_data,
     "id": 1,
-    "return_response": True
+    "return_response": return_response
     }
     ws.send(json.dumps(message))
     result =  json.loads(ws.recv())

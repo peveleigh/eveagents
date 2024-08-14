@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from homeassistant_api import Client
 from evehasstools import hass_get_todo_items
+from langchain_core.messages import HumanMessage, SystemMessage
+from evellmtools import todo_tools, tools_dict
 
 load_dotenv()
 
@@ -27,7 +29,7 @@ class BaseAgent:
         self.sys_prompt = self.get_sys_prompt()
 
     def get_sys_prompt(self):
-        return "You're a helpful assistant."
+        return SystemMessage("You're a helpful assistant.")
 
     def get_llm(self):
         llm = ChatOpenAI(
@@ -38,11 +40,16 @@ class BaseAgent:
         return llm
 
     def invoke(self,q: str) -> str:
-        messages = [
-            ("system",self.sys_prompt),
-            ("human", q),
-        ]
-        return self.llm.invoke(messages).content
+        messages = [self.sys_prompt,HumanMessage(q)]
+        res = self.llm.invoke(messages)
+        messages.append(res)
+        if res.tool_calls:
+            for tool_call in res.tool_calls:
+                selected_tool = tools_dict[tool_call["name"].lower()]
+                tool_msg = selected_tool.invoke(tool_call)
+                messages.append(tool_msg)
+            res = self.llm.invoke(messages)
+        return res.content
 
 class Meteorologist_Agent(BaseAgent):
     def __init__(self):
@@ -54,12 +61,16 @@ class Meteorologist_Agent(BaseAgent):
         sys_prompt_template = ""
         with open("prompts/meteorologist_agent.txt") as file:
             sys_prompt_template = file.read()
-        return self.client.get_rendered_template(sys_prompt_template)
+        return SystemMessage(self.client.get_rendered_template(sys_prompt_template))
 
 class Executive_Assistant_Agent(BaseAgent):
     def __init__(self):
         super().__init__()
         self.sys_prompt = self.get_sys_prompt()
+        self.get_tools()
+
+    def get_tools(self):
+        self.llm = self.llm.bind_tools(todo_tools)
 
     def get_sys_prompt(self):
         # Get current date and day of the week
@@ -74,12 +85,13 @@ class Executive_Assistant_Agent(BaseAgent):
 
         # Get the user's calendar events. 
         # PLACEHOLDER FOR NOW
-        calender_events = "none"
+        calendar_events = "none"
 
         # Read system prompt template from file and populate with data
         sys_prompt_template = ""
         with open("prompts/executive_assistant_agent.txt") as file:
             sys_prompt_template = file.read()
-        sys_prompt = sys_prompt_template.format(now=now,weather=weather,todo_items=todo_items,calender_events=calender_events)
-        return sys_prompt
+        prompt_data = {"now":now,"weather":weather,"todo_items":todo_items,"calendar_events":calendar_events}
+        sys_prompt = sys_prompt_template.format(**prompt_data)
+        return SystemMessage(sys_prompt)
         

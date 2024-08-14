@@ -8,4 +8,4 @@ Here is some relevant information you can reference when assisting Eveleigh.
 
     Todo events: {todo_items}
 
-    Calendar events: {calender_events}
+    Calendar events: {calendar_events}
