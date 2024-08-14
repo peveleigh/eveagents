@@ -1,0 +1,3 @@
+langchain
+langhchain-openai
+homeassistant_api
