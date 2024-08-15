@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Query
 from eveagents import (
-    CCTV_Agent, 
+    CCTV_Agent,
+    Generic_Agent,
     Executive_Assistant_Agent, 
     Meteorologist_Agent, 
     Smart_Home_Agent
@@ -10,6 +11,7 @@ app = FastAPI()
 
 agents = {
     "cctv_agent": CCTV_Agent,
+    "generic_agent": Generic_Agent,
     "executive_assistant_agent": Executive_Assistant_Agent,
     "meteorologist_agent": Meteorologist_Agent,
     "smart_home_agent": Smart_Home_Agent,

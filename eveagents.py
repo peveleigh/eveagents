@@ -4,7 +4,7 @@ from langchain_openai import ChatOpenAI
 from homeassistant_api import Client
 from evehasstools import hass_get_todo_items
 from langchain_core.messages import HumanMessage, SystemMessage
-from evellmtools import cctv_tools, smart_home_tools, todo_tools, tools_dict
+from evellmtools import cctv_tools, generic_tools, smart_home_tools, todo_tools, tools_dict
 
 load_dotenv()
 
@@ -124,3 +124,14 @@ class Executive_Assistant_Agent(BaseAgent):
         sys_prompt = sys_prompt_template.format(**prompt_data)
         return SystemMessage(sys_prompt)
         
+class Generic_Agent(BaseAgent):
+    def __init__(self):
+        super().__init__()
+        self.sys_prompt = self.get_sys_prompt()
+        self.get_tools()
+
+    def get_tools(self):
+        self.llm = self.llm.bind_tools(generic_tools)
+
+    def get_sys_prompt(self):
+        return SystemMessage("You're a helpful assistant")

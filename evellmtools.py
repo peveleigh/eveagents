@@ -1,11 +1,15 @@
-import json
+import json,os
 from websocket import create_connection
 from langchain.pydantic_v1 import BaseModel, Field
 from langchain_core.tools import tool
 from evehasstools import hass_get_todo_items, run_hass_service
+from exa_py import Exa
+from dotenv import load_dotenv
 
 from enum import Enum
 from typing import Dict
+
+load_dotenv()
 
 class analyze_cctv_camera(BaseModel):
     camera_id: str = Field(...,description="ID of the camera to be analyzed")
@@ -65,12 +69,25 @@ def execute_smart_home_action_func(domain: str, action: str, action_data: Dict):
     """Execute a Smart Home action"""
     res = run_hass_service(domain,action,action_data["entity_id"],return_response=False)
 
+class search_exa(BaseModel):
+    """Use the Exa search engine"""
+    query: str = Field(...,description="The query to search for on Exa")
+
+@tool
+def search_exa_func(query: str) -> str:
+    """Use the Exa search engine"""
+    exa = Exa(os.getenv('EXA_API_KEY'))
+    result = exa.search(query, use_autoprompt=True, num_results=5)
+    return result
+
 cctv_tools = [analyze_cctv_camera]
+generic_tools = [search_exa]
 smart_home_tools = [execute_smart_home_action]
 todo_tools = [get_todo_list,add_todo_item]
 tools_dict = {
     "get_todo_list": get_todo_list_func,
     "add_todo_item":add_todo_item_func,
     "execute_smart_home_action":execute_smart_home_action_func,
-    "analyze_cctv_camera":analyze_cctv_camera_func
+    "analyze_cctv_camera":analyze_cctv_camera_func,
+    "search_exa":search_exa_func
     }
