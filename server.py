@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Query
-from eveagents import Meteorologist_Agent, Executive_Assistant_Agent
+from eveagents import Meteorologist_Agent, Executive_Assistant_Agent, Smart_Home_Agent
 
 app = FastAPI()
 
