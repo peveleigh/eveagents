@@ -4,7 +4,7 @@ from langchain_openai import ChatOpenAI
 from homeassistant_api import Client
 from evehasstools import hass_get_todo_items
 from langchain_core.messages import HumanMessage, SystemMessage
-from evellmtools import smart_home_tools, todo_tools, tools_dict
+from evellmtools import cctv_tools, smart_home_tools, todo_tools, tools_dict
 
 load_dotenv()
 
@@ -62,6 +62,20 @@ class Meteorologist_Agent(BaseAgent):
         with open("prompts/meteorologist_agent.txt") as file:
             sys_prompt_template = file.read()
         return SystemMessage(self.client.get_rendered_template(sys_prompt_template))
+
+class CCTV_Agent(BaseAgent):
+    def __init__(self):
+        super().__init__()
+        self.sys_prompt = self.get_sys_prompt()
+        self.get_tools()
+    def get_tools(self):
+        self.llm = self.llm.bind_tools(cctv_tools)
+
+    def get_sys_prompt(self):
+        sys_prompt = ""
+        with open("prompts/cctv_agent.txt") as file:
+            sys_prompt = file.read()
+        return SystemMessage(sys_prompt)
 
 class Smart_Home_Agent(BaseAgent):
     def __init__(self):

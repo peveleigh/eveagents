@@ -1,19 +1,27 @@
 from fastapi import FastAPI, Query
-from eveagents import Meteorologist_Agent, Executive_Assistant_Agent, Smart_Home_Agent
+from eveagents import (
+    CCTV_Agent, 
+    Executive_Assistant_Agent, 
+    Meteorologist_Agent, 
+    Smart_Home_Agent
+)
 
 app = FastAPI()
 
-@app.get("/meteorologist_agent")
-async def meteorologist(q: str = Query(None, min_length=3, description="A query")):
-    agent = Meteorologist_Agent()
-    return agent.invoke(q)
+agents = {
+    "cctv_agent": CCTV_Assistant_Agent,
+    "executive_assistant_agent": Executive_Assistant_Agent,
+    "meteorologist_agent": Meteorologist_Agent,
+    "smart_home_agent": Smart_Home_Agent,
+}
 
-@app.get("/executive_assistant_agent")
-async def executive_assistant(q: str = Query(None, min_length=3, description="A query")):
-    agent = Executive_Assistant_Agent()
+@app.get("/{agent_name}")
+async def invoke_agent(
+    agent_name: str,
+    q: str = Query(None, min_length=3, description="A query"),
+):
+    if agent_name not in agents:
+        return {"error": f"Agent '{agent_name}' not found"}
+    
+    agent = agents[agent_name]()
     return agent.invoke(q)
-
-@app.get("/smart_home_agent")
-async def smart_home(q: str = Query(None, min_length=3, description="A query")):
-    agent = Smart_Home_Agent()
-    return agent.invoke(q)    
