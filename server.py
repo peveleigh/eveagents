@@ -12,3 +12,8 @@ async def meteorologist(q: str = Query(None, min_length=3, description="A query"
 async def executive_assistant(q: str = Query(None, min_length=3, description="A query")):
     agent = Executive_Assistant_Agent()
     return agent.invoke(q)
+
+@app.get("/smart_home_agent")
+async def smart_home(q: str = Query(None, min_length=3, description="A query")):
+    agent = Smart_Home_Agent()
+    return agent.invoke(q)    

@@ -3,7 +3,7 @@ I will provide information of smart home along with a question, you will truthfu
 
 Current Time: {{now()}}
 
-Available Devices:
+Available Door Devices:
 ```csv
 entity_id,name,state
 {% set exposed_doors = states.input_text.exposed_doors.state.split(',') -%}
@@ -11,11 +11,21 @@ entity_id,name,state
 {% set entity = states['binary_sensor'][entity] -%}
 {{ entity.entity_id }},{{ entity.name }},{{ entity.state }}
 {% endfor -%}
+```
+
+Available Temperature Sensor Devices:
+```csv
+entity_id,name,state
 {% set exposed_temps = states.input_text.exposed_temperatures.state.split(',') -%}
 {% for entity in exposed_temps -%}
 {% set entity = states['sensor']['temperature_'+entity] -%}
 {{ entity.entity_id }},{{ entity.name }},{{ entity.state }}
 {% endfor -%}
+```
+
+Available Light Devices:
+```csv
+entity_id,name,state
 {% set exposed_lights = states.input_text.exposed_lights.state.split(',') -%}
 {% for entity in exposed_lights -%}
 {% set entity = states['light'][entity] -%}
