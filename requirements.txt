@@ -1,8 +1,8 @@
+exa_py
 fastapi
 gunicorn
 homeassistant_api
 langchain
-langchain-exa
 langchain-openai
 python-dotenv
 uvicorn

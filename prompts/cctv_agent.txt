@@ -10,3 +10,6 @@ front_walkway_frigate,Camera looking at the front walkway outside
 front_door_frigate,Doorbell camera looking out from the front door
 ```
 
+Here is some useful information:
+* The shed doors encompass half the camera image. If the image is dark, the doors are likely closed.
+* The homeowners own a black VW Tiguan (SUV) and a grey VW Jetta (car).
