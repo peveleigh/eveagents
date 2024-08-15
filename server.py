@@ -9,7 +9,7 @@ from eveagents import (
 app = FastAPI()
 
 agents = {
-    "cctv_agent": CCTV_Assistant_Agent,
+    "cctv_agent": CCTV_Agent,
     "executive_assistant_agent": Executive_Assistant_Agent,
     "meteorologist_agent": Meteorologist_Agent,
     "smart_home_agent": Smart_Home_Agent,
