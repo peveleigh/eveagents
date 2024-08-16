@@ -37,7 +37,7 @@ Available Cameras:
 Here are the cameras you can access:
 ```csv
 camera_id,description
-shed_inside,Camera located inside the shed
+shed_inside,Camera located inside the shed facing the doors
 living_room_snapshot,Camera located in the living room
 driveway_frigate,Camera looking down the length of the driveway
 front_walkway_frigate,Camera looking at the front walkway outside
