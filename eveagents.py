@@ -84,7 +84,7 @@ class Smart_Home_Agent(BaseAgent):
         self.get_tools()
 
     def get_tools(self):
-        self.llm = self.llm.bind_tools(smart_home_tools)
+        self.llm = self.llm.bind_tools(smart_home_tools+cctv_tools)
 
     def get_sys_prompt(self):
         sys_prompt = ""

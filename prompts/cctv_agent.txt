@@ -9,7 +9,3 @@ driveway_frigate,Camera looking down the length of the driveway
 front_walkway_frigate,Camera looking at the front walkway outside
 front_door_frigate,Doorbell camera looking out from the front door
 ```
-
-Here is some useful information:
-* The camera inside the shed is looking directly at the doors. If the image is dark, the doors are likely closed.
-* The homeowners own a black VW Tiguan (SUV) and a grey VW Jetta (car).
