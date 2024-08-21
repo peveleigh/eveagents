@@ -38,3 +38,10 @@ def hass_get_todo_items(entity_id,service_data={'status':'needs_action'}):
     todo_items = [x['summary'] for x in todo_items['result']['response'][entity_id]['items']]
     todo_items = ','.join(todo_items)
     return todo_items
+
+def hass_get_calendar_events():
+    service_data = {"duration":{"hours":24}}
+    calendar_events = run_hass_service("calendar","get_events","calendar.personal",service_data)
+    calendar_events = [x['summary'] for x in calendar_events['result']['response']['calendar.personal']['events']]
+    calendar_events = ','.join(calendar_events)
+    return calendar_events

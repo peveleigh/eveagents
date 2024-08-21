@@ -2,7 +2,7 @@ import os, datetime
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from homeassistant_api import Client
-from evehasstools import hass_get_todo_items
+from evehasstools import hass_get_todo_items, hass_get_calendar_events
 from langchain_core.messages import HumanMessage, SystemMessage
 from evellmtools import cctv_tools, generic_tools, smart_home_tools, todo_tools, tools_dict
 
@@ -114,7 +114,7 @@ class Executive_Assistant_Agent(BaseAgent):
 
         # Get the user's calendar events. 
         # PLACEHOLDER FOR NOW
-        calendar_events = "none"
+        calendar_events = hass_get_calendar_events()
 
         # Read system prompt template from file and populate with data
         sys_prompt_template = ""
