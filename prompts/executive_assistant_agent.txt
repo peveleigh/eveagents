@@ -10,3 +10,5 @@ todo_list,description
 todo.todo,default to do list
 todo.shopping,shopping list
 ```
+
+Use the default to do list if the user doesn't refer to a specific list.

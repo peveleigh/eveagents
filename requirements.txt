@@ -7,3 +7,4 @@ exa-py
 pytz
 fastapi
 uvicorn
+gunicorn
