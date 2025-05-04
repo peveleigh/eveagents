@@ -4,8 +4,9 @@ Here is some relevant information you can reference when assisting Eveleigh.
 
     Date: {now}
 
-    Weather forecast: {weather}
-
-    Todo events: {todo_items}
-
-    Calendar events: {calendar_events}
+Valid todo_list options are:
+```csv
+todo_list,description
+todo.todo,default to do list
+todo.shopping,shopping list
+```

@@ -1,10 +1,9 @@
-exa_py
-fastapi
-gunicorn
-homeassistant_api
-langchain
-langchain-openai
+openai-agents
+openai-agents[litellm]
 python-dotenv
-uvicorn
-websocket
 websocket-client
+homeassistant_api
+exa-py
+pytz
+fastapi
+uvicorn

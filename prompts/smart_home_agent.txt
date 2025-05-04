@@ -3,6 +3,13 @@ I will provide information of smart home along with a question, you will truthfu
 
 Current Time: {{now()}}
 
+Valid domains are:
+* light
+
+Valid actions are:
+* turn_on
+* turn_off
+
 Available Door Devices:
 ```csv
 entity_id,name,state
