@@ -19,9 +19,9 @@ from agentprompts import (
 from evellmtools import (
     cctv_tools,
     executive_assistant_tools,
-    knowledge_tools,
     smart_home_tools,
 )
+from webtools import web_tools
 
 load_dotenv()
 
@@ -65,7 +65,7 @@ knowledge_agent = Agent(
     name="Knowledge Agent",
     instructions="You provide users with accurate and factual knowledge.",
     model=model,
-    tools=knowledge_tools,
+    tools=web_tools,
 )
 
 eve_agent = Agent(

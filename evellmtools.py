@@ -1,9 +1,6 @@
 """Collection of LLM tools."""
 
-import os
-
 from agents import function_tool
-from exa_py import Exa
 
 from evehasstools import hass_get_todo_items, run_hass_service
 
@@ -64,18 +61,8 @@ def execute_smart_home_action(domain: str, action: str, entity_id: str) -> None:
     """
     run_hass_service(domain,action,entity_id,return_response=False)
 
-@function_tool
-def web_search(query: str) -> str:
-    """Search the web for information.
 
-    Args:
-        query: Search query
-
-    """
-    exa = Exa(os.getenv("EXA_API_KEY"))
-    return exa.search(query, num_results=3)
 
 cctv_tools = [analyze_cctv_camera]
-knowledge_tools = [web_search]
 smart_home_tools = [execute_smart_home_action]
 executive_assistant_tools = [get_todo_list,add_todo_item]
