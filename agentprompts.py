@@ -23,6 +23,14 @@ with Path.open("prompts/eve_agent.txt") as file:
         + file.read()
     )
 
+# Knowledge Agent Prompt
+with Path.open("prompts/knowledge_agent.txt") as file:
+    knowledge_prompt = (
+        RECOMMENDED_PROMPT_PREFIX
+        + "\n\n"
+        + file.read()
+    )
+
 # Meteorologist Agent Prompt
 with Path.open("prompts/meteorologist_agent.txt") as file:
     meteorologist_prompt_template = file.read()

@@ -7,21 +7,23 @@ from agents import (
     set_tracing_disabled,
 )
 from agents.extensions.models.litellm_model import LitellmModel
+from agents.model_settings import ModelSettings
 from dotenv import load_dotenv
 
 from agentprompts import (
     cctv_prompt,
     eve_prompt,
     executive_assistant_prompt,
+    knowledge_prompt,
     meteorologist_prompt,
     smart_home_prompt,
 )
-from evellmtools import (
+from tools.evellmtools import (
     cctv_tools,
     executive_assistant_tools,
     smart_home_tools,
 )
-from webtools import web_tools
+from tools.webtools import web_tools
 
 load_dotenv()
 
@@ -63,9 +65,10 @@ executive_assistant_agent = Agent(
 
 knowledge_agent = Agent(
     name="Knowledge Agent",
-    instructions="You provide users with accurate and factual knowledge.",
+    instructions=knowledge_prompt,
     model=model,
     tools=web_tools,
+    model_settings=ModelSettings(tool_choice="required"),
 )
 
 eve_agent = Agent(
