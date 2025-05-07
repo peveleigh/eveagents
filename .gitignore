@@ -1,8 +1,8 @@
 __pycache__/
-/venv
-/.vscode
+venv/
+.vscode/
+research_reports/
+logs/
 .env
 test*.py
 *.db
-/research_reports
-

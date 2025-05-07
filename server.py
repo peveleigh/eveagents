@@ -9,6 +9,7 @@ from fastapi import FastAPI, Query
 
 from conversation_storage import ConversationStorage
 from eveagents import eve_agent
+from log_setup import setup_logging
 
 storage = ConversationStorage()
 
@@ -23,20 +24,33 @@ async def invoke_agent(
     ] = None,
 ) -> str:
     """Invoke Eve Agent."""
-    retrieved_items: list(dict[str, str]) = storage.get_conversation(cid)
+    logger = setup_logging()
+    retrieved_items = None
+    if cid:
+        logger.info(
+            "Invoking Eve Agent with conversation id: %s",
+            cid,
+        )
+        retrieved_items: list(dict[str, str]) = storage.get_conversation(cid)
+    else:
+        logger.info(
+            "Invoking Eve Agent without a conversation id.",
+        )
 
     input_items: list(dict[str, str]) = [{"content": query, "role": "user"}]
 
     if retrieved_items:
         input_items = retrieved_items + input_items
 
-    print(cid)
+    try:
+        res = await Runner.run(
+            eve_agent,
+            input_items,
+        )
+    except Exception:
+        logger.exception("Failed to run eve_agent.")
 
-    res = await Runner.run(
-        eve_agent,
-        input_items,
-    )
-
-    storage.save_conversation(cid, res.to_input_list())
+    if cid:
+        storage.save_conversation(cid, res.to_input_list())
 
     return res.final_output
