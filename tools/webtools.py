@@ -155,4 +155,4 @@ def web_scrape(url: str) -> str:
 
     return content
 
-web_tools = [web_search, web_scrape, email_tool]
+web_tools = [web_search, web_scrape, email_tool, research]

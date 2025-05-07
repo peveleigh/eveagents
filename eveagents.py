@@ -27,7 +27,7 @@ from tools.webtools import web_tools
 
 load_dotenv()
 
-set_tracing_disabled(disabled=True)
+#set_tracing_disabled(disabled=True)
 
 api_key = os.getenv("OPENROUTER_API_KEY") or ""
 model_name = "openrouter/google/gemini-2.5-flash-preview"
