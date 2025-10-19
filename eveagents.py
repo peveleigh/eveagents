@@ -30,7 +30,7 @@ load_dotenv()
 #set_tracing_disabled(disabled=True)
 
 api_key = os.getenv("OPENROUTER_API_KEY") or ""
-model_name = "openrouter/google/gemini-2.5-flash-preview"
+model_name = "openrouter/google/gemini-2.5-flash"
 model = LitellmModel(model=model_name, api_key=api_key)
 
 # Possible future agents: Media, Wellness, Financial
