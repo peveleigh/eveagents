@@ -1,0 +1,483 @@
+manifest:
+  version: "0.1.2"
+  schema: https://a2as.org/cert/schema
+  subject:
+    name: peveleigh/eveagents
+    source: https://github.com/peveleigh/eveagents
+    branch: main
+    commit: "9cf8d84e"
+    scope: [agentprompts.py, eveagents.py, evehasstools.py, server.py, tools/emailer.py, tools/evellmtools.py, tools/research_bot/manager.py,
+      tools/research_bot/researchagents/planner_agent.py, tools/research_bot/researchagents/search_agent.py, tools/research_bot/researchagents/writer_agent.py,
+      tools/webtools.py]
+  issued:
+    by: A2AS.org
+    at: '2026-01-26T16:14:18Z'
+  signatures:
+    digest: sha256:SOWYr1CqOlLTx5aYJdOHa3TkiPOQvHGv6Ojjwa2t1VI
+    key: ed25519:ZVBoLPe-xLh8Eu3dBlJKGx2_sEQEqnhYaZRhfffQBHg
+    sig: ed25519:IDzqH-9P2N8Hb2m96g7tagYcJb5Y6QZhwAhibbHk2_H2ThovVZi94McTnuhxDjsdx2opJtZt6O1o8Rll2_tLAA
+
+agents:
+  cctv_agent:
+    type: instance
+    models: [model]
+    tools: [cctv_tools]
+    params:
+      name: CCTV Agent
+      instructions: [cctv_prompt]
+  eve_agent:
+    type: instance
+    models: [model]
+    params:
+      name: Eve Agent
+      handoffs: [meteorologist_agent, cctv_agent, smart_home_agent, executive_assistant_agent, knowledge_agent]
+      instructions: [eve_prompt]
+  executive_assistant_agent:
+    type: instance
+    models: [model]
+    tools: [executive_assistant_tools]
+    params:
+      name: Executive Assistant Agent
+      instructions: [executive_assistant_prompt]
+  knowledge_agent:
+    type: instance
+    models: [model]
+    tools: [web_tools]
+    params:
+      name: Knowledge Agent
+      model_settings: ModelSettings(tool_choice=required)
+      instructions: [knowledge_prompt]
+  meteorologist_agent:
+    type: instance
+    models: [model]
+    params:
+      name: Meteorologist Agent
+      instructions: [meteorologist_prompt]
+  planner_agent:
+    type: instance
+    models: [model]
+    params:
+      name: PlannerAgent
+      output_type: WebSearchPlan
+      instructions: ['You are a helpful research assistant. Given a query, come up with a set of web searches to perform to
+          best answer the query. Output between 5 and 20 terms to query for.']
+  search_agent:
+    type: instance
+    models: [model]
+    tools: [web_search]
+    params:
+      name: Search agent
+      model_settings: ModelSettings(tool_choice=required)
+      instructions: ['You are a research assistant. Given a search term, you search the web for that term and produce a concise
+          summary of the results. The summary must 2-3 paragraphs and less than 300 words. Capture the main points. Write
+          succinctly, no need to have complete sentences or good grammar. This will be consumed by someone synthesizing a
+          report, so its vital you capture the essence and ignore any fluff. Do not include any additional commentary other
+          than the summary itself.']
+  smart_home_agent:
+    type: instance
+    models: [model]
+    tools: [smart_home_tools]
+    params:
+      name: Smart Home Agent
+      instructions: [smart_home_prompt]
+  writer_agent:
+    type: instance
+    models: [model]
+    params:
+      name: WriterAgent
+      output_type: ReportData
+      instructions: ['You are a senior researcher tasked with writing a cohesive report for a research query. You will be
+          provided with the original query, and some initial research done by a research assistant.', 'You should first come
+          up with an outline for the report that describes the structure and flow of the report. Then, generate the report
+          and return that as your final output.', 'The final output should be in markdown format, and it should be lengthy
+          and detailed. Aim for 5-10 pages of content, at least 1000 words.']
+
+models:
+  model:
+    type: variable
+    agents: [planner_agent, writer_agent, search_agent, meteorologist_agent, cctv_agent, smart_home_agent, executive_assistant_agent,
+      knowledge_agent, eve_agent]
+
+tools:
+  add_todo_item:
+    type: decorator
+    params:
+      description: |-
+        Add item to todo list.  Use the default list if user doesn't specify a list.
+
+        Args:
+            todo_list: Name of to do list
+            todo_item: Item to add to the to do list
+  analyze_cctv_camera:
+    type: decorator
+    params:
+      description: |-
+        Analyze snapshot of CCTV camera.
+
+        Args:
+            camera_id: ID of the camera to be analyzed
+            prompt: A prompt to describe the image based on the user query
+  cctv_tools:
+    type: variable
+    agents: [cctv_agent]
+    params:
+      dynamic: "True"
+  email_tool:
+    type: decorator
+    params:
+      description: |-
+        Send an email.
+
+        Args:
+            subject: Subject of the email
+            body: Body of the email
+            attachment_path: Path to file to attach to email
+
+        Returns:
+                bool: True if email was sent successfully, False otherwise
+  exa_search:
+    type: decorator
+    params:
+      description: |-
+        Search the web for information.
+
+        Args:
+            query: Search query
+  execute_smart_home_action:
+    type: decorator
+    params:
+      description: |-
+        Execute a Smart Home action.
+
+        Args:
+            domain: The domain of the action
+            action: The action to be called
+            entity_id: The ID of the entity to be acted on
+  executive_assistant_tools:
+    type: variable
+    agents: [executive_assistant_agent]
+    params:
+      dynamic: "True"
+  get_todo_list:
+    type: decorator
+    params:
+      description: |-
+        Get items from todo list. Use the default list if user doesn't specify a list.
+
+        Args:
+            todo_list: Name of to do list
+  research:
+    type: decorator
+    params:
+      description: Research a topic and send report to email.
+  smart_home_tools:
+    type: variable
+    agents: [smart_home_agent]
+    params:
+      dynamic: "True"
+  web_scrape:
+    type: decorator
+    params:
+      description: |-
+        Scrape and process a web page using r.jina.ai.
+
+        Args:
+            url: The URL of the web page to scrape.
+
+        Returns:
+            The scraped and processed content without the Links/Buttons section,
+            or an error message.
+  web_search:
+    type: decorator
+    agents: [search_agent]
+    params:
+      description: |-
+        Search the web for information.
+
+        Args:
+            query: Search query
+  web_tools:
+    type: variable
+    agents: [knowledge_agent]
+    params:
+      dynamic: "True"
+
+teams:
+  eve_agent:
+    type: handoff
+    agents: [eve_agent, meteorologist_agent, cctv_agent, smart_home_agent, executive_assistant_agent, knowledge_agent]
+
+imports:
+  Agent: agents.Agent
+  Annotated: typing.Annotated
+  annotations: __future__.annotations
+  asyncio: asyncio
+  BaseModel: pydantic.BaseModel
+  cctv_prompt: agentprompts.cctv_prompt
+  cctv_tools: tools.evellmtools.cctv_tools
+  Client: homeassistant_api.Client
+  ConversationStorage: conversation_storage.ConversationStorage
+  create_connection: websocket.create_connection
+  datetime: datetime
+  Emailer: tools.emailer.Emailer
+  encoders: email.encoders
+  eve_agent: eveagents.eve_agent
+  eve_prompt: agentprompts.eve_prompt
+  Exa: exa_py.Exa
+  executive_assistant_prompt: agentprompts.executive_assistant_prompt
+  executive_assistant_tools: tools.evellmtools.executive_assistant_tools
+  FastAPI: fastapi.FastAPI
+  function_tool: agents.function_tool
+  gen_trace_id: agents.gen_trace_id
+  hass_get_calendar_events: evehasstools.hass_get_calendar_events
+  hass_get_todo_items: evehasstools.hass_get_todo_items
+  json: json
+  knowledge_prompt: agentprompts.knowledge_prompt
+  LitellmModel: agents.extensions.models.litellm_model.LitellmModel
+  load_dotenv: dotenv.load_dotenv
+  logging: logging
+  meteorologist_prompt: agentprompts.meteorologist_prompt
+  MIMEBase: email.mime.base.MIMEBase
+  MIMEMultipart: email.mime.multipart.MIMEMultipart
+  MIMEText: email.mime.text.MIMEText
+  ModelSettings: agents.model_settings.ModelSettings
+  os: os
+  Path: pathlib.Path
+  planner_agent: researchagents.planner_agent.planner_agent
+  pytz: pytz
+  Query: fastapi.Query
+  RECOMMENDED_PROMPT_PREFIX: agents.extensions.handoff_prompt.RECOMMENDED_PROMPT_PREFIX
+  ReportData: researchagents.writer_agent.ReportData
+  requests: requests
+  ResearchManager: research_bot.manager.ResearchManager
+  run_hass_service: evehasstools.run_hass_service
+  Runner: agents.Runner
+  search_agent: researchagents.search_agent.search_agent
+  set_tracing_disabled: agents.set_tracing_disabled
+  setup_logging: log_setup.setup_logging
+  smart_home_prompt: agentprompts.smart_home_prompt
+  smart_home_tools: tools.evellmtools.smart_home_tools
+  smtplib: smtplib
+  subprocess: subprocess
+  sys: sys
+  trace: agents.trace
+  web_tools: tools.webtools.web_tools
+  WebSearchItem: researchagents.planner_agent.WebSearchItem
+  WebSearchPlan: researchagents.planner_agent.WebSearchPlan
+  writer_agent: researchagents.writer_agent.writer_agent
+
+functions:
+  __init__:
+    type: sync
+    module: tools.research_bot.manager
+    args: [self]
+    params:
+      returns: None
+  _perform_searches:
+    type: async
+    module: tools.research_bot.manager
+    args: [self, search_plan]
+    params:
+      returns: list[str]
+  _plan_searches:
+    type: async
+    module: tools.research_bot.manager
+    args: [self, query]
+    params:
+      returns: WebSearchPlan
+  _search:
+    type: async
+    module: tools.research_bot.manager
+    args: [self, item]
+  _write_report:
+    type: async
+    module: tools.research_bot.manager
+    args: [self, query, search_results]
+    params:
+      returns: ReportData
+  add_todo_item:
+    type: tool
+    module: tools.evellmtools
+    args: [todo_list, todo_item]
+    params:
+      returns: None
+  analyze_cctv_camera:
+    type: tool
+    module: tools.evellmtools
+    args: [camera_id, prompt]
+    params:
+      returns: str
+  email_tool:
+    type: tool
+    module: tools.webtools
+    args: [subject, body, attachment_path]
+    params:
+      returns: bool
+  exa_search:
+    type: tool
+    module: tools.webtools
+    args: [query]
+    params:
+      returns: str
+  execute_smart_home_action:
+    type: tool
+    module: tools.evellmtools
+    args: [domain, action, entity_id]
+    params:
+      returns: None
+  get_todo_list:
+    type: tool
+    module: tools.evellmtools
+    args: [todo_list]
+    params:
+      returns: str
+  hass_get_calendar_events:
+    type: sync
+    module: evehasstools
+    params:
+      returns: str
+  hass_get_todo_items:
+    type: sync
+    module: evehasstools
+    args: [entity_id, service_data]
+    params:
+      returns: str
+  invoke_agent:
+    type: async
+    module: server
+    args: [query, cid]
+    params:
+      returns: str
+  research:
+    type: tool
+    module: tools.webtools
+    args: [query]
+    params:
+      returns: str
+  run:
+    type: async
+    module: tools.research_bot.manager
+    args: [self, query]
+    params:
+      returns: ReportData
+  run_hass_service:
+    type: sync
+    module: evehasstools
+    args: [domain, service, entity_id, service_data]
+    params:
+      returns: dict
+  send_email:
+    type: sync
+    module: tools.emailer
+    args: [self, subject, body, attachment_path]
+    params:
+      returns: bool
+  web_scrape:
+    type: tool
+    module: tools.webtools
+    args: [url]
+    params:
+      returns: str
+  web_search:
+    type: tool
+    module: tools.webtools
+    args: [query, category, language]
+    params:
+      returns: dict
+
+variables:
+  EXA_API_KEY:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [tools.research_bot.researchagents.search_agent, tools.webtools]
+  HASS_API_URL:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [agentprompts, evehasstools]
+  HASS_TOKEN:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [agentprompts, evehasstools]
+  OPENROUTER_API_KEY:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [tools.research_bot.researchagents.planner_agent, tools.research_bot.researchagents.writer_agent, tools.research_bot.researchagents.search_agent,
+        eveagents, evehasstools]
+  OPENROUTER_API_URL:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [evehasstools]
+  RECIPIENT_EMAIL:
+    type: env
+    params:
+      caller: [os.environ.get]
+      path: [tools.emailer, tools.webtools]
+  SEARXNG_URL:
+    type: env
+    params:
+      caller: [os.getenv]
+      path: [tools.webtools]
+  SENDER_EMAIL:
+    type: env
+    params:
+      caller: [os.environ.get]
+      path: [tools.emailer]
+  SMTP_HOST:
+    type: env
+    params:
+      caller: [os.environ.get]
+      path: [tools.emailer]
+  SMTP_PASSWORD:
+    type: env
+    params:
+      caller: [os.environ.get]
+      path: [tools.emailer]
+  SMTP_PORT:
+    type: env
+    params:
+      caller: [os.environ.get]
+      path: [tools.emailer]
+  SMTP_USER:
+    type: env
+    params:
+      caller: [os.environ.get]
+      path: [tools.emailer]
+
+files:
+  attachment_path:
+    type: variable
+    actions: [read]
+    params:
+      caller: [Path]
+  prompts/cctv_agent.txt:
+    type: literal
+    actions: [read]
+  prompts/eve_agent.txt:
+    type: literal
+    actions: [read]
+  prompts/executive_assistant_agent.txt:
+    type: literal
+    actions: [read]
+  prompts/knowledge_agent.txt:
+    type: literal
+    actions: [read]
+  prompts/meteorologist_agent.txt:
+    type: literal
+    actions: [read]
+  prompts/smart_home_agent.txt:
+    type: literal
+    actions: [read]
+
+networks:
+  self.smtp_host:
+    type: api
+    actions: [connect]
+    protocols: [smtp]
+    ports: ["587", "465"]
+    params:
+      caller: [smtplib.SMTP]
