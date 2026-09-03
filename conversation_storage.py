@@ -3,11 +3,21 @@
 from __future__ import annotations
 
 import json
+import logging
 import sqlite3
+import threading
+
+logger = logging.getLogger(__name__)
 
 
 class ConversationStorage:
-    """A class to handle storing and retrieving conversation data using SQLite."""
+    """A class to handle storing and retrieving conversation data using SQLite.
+
+    Uses a single shared connection opened with ``check_same_thread=False``
+    guarded by a ``threading.Lock`` so it is safe to use across the async
+    request handlers and gunicorn thread workers.
+
+    """
 
     def __init__(self, db_path: str = "conversations.db") -> None:
         """Initialize the ConversationStorage with a path to the SQLite database.
@@ -17,25 +27,23 @@ class ConversationStorage:
 
         """
         self.db_path = db_path
+        self._lock = threading.Lock()
+        self._conn = sqlite3.connect(self.db_path, check_same_thread=False)
         self._initialize_db()
 
     def _initialize_db(self) -> None:
         """Create the conversations table if it doesn't exist."""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-
-        # Create table if it doesn't exist
-        cursor.execute("""
-        CREATE TABLE IF NOT EXISTS conversations (
-            conversation_id TEXT PRIMARY KEY,
-            input_items TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-        """)
-
-        conn.commit()
-        conn.close()
+        with self._lock:
+            cursor = self._conn.cursor()
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS conversations (
+                conversation_id TEXT PRIMARY KEY,
+                input_items TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """)
+            self._conn.commit()
 
     def save_conversation(
         self,
@@ -53,27 +61,19 @@ class ConversationStorage:
 
         """
         try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-
-            # Convert input_items to JSON string for storage
             input_items_json = json.dumps(input_items)
-
-            # Use INSERT OR REPLACE to handle both new and existing conversations
-            # This will insert a new row if conversation_id doesn't exist,
-            # or replace the existing row if it does
-            cursor.execute(
-                """
-                INSERT OR REPLACE INTO conversations (conversation_id, input_items, updated_at)
-                VALUES (?, ?, CURRENT_TIMESTAMP)
-                """,
-                (conversation_id, input_items_json),
-            )
-
-            conn.commit()
-            conn.close()
-        except Exception as e:
-            print(f"Error saving conversation: {e}")
+            with self._lock:
+                cursor = self._conn.cursor()
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO conversations (conversation_id, input_items, updated_at)
+                    VALUES (?, ?, CURRENT_TIMESTAMP)
+                    """,
+                    (conversation_id, input_items_json),
+                )
+                self._conn.commit()
+        except sqlite3.Error:
+            logger.exception("Error saving conversation %s", conversation_id)
             return False
 
         return True
@@ -89,22 +89,18 @@ class ConversationStorage:
 
         """
         try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-
-            cursor.execute(
-                "SELECT input_items FROM conversations WHERE conversation_id = ?",
-                (conversation_id,),
-            )
-
-            result = cursor.fetchone()
-            conn.close()
+            with self._lock:
+                cursor = self._conn.cursor()
+                cursor.execute(
+                    "SELECT input_items FROM conversations WHERE conversation_id = ?",
+                    (conversation_id,),
+                )
+                result = cursor.fetchone()
 
             if result:
-                # Convert JSON string back to list of dictionaries
                 return json.loads(result[0])
-        except Exception as e:
-            print(f"Error retrieving conversation: {e}")
+        except sqlite3.Error:
+            logger.exception("Error retrieving conversation %s", conversation_id)
             return None
 
         return None
@@ -120,22 +116,19 @@ class ConversationStorage:
 
         """
         try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-
-            cursor.execute(
-                "DELETE FROM conversations WHERE conversation_id = ?", 
-                (conversation_id,)
-            )
-
-            conn.commit()
-            conn.close()
-        except Exception as e:
-            print(f"Error deleting conversation: {e}")
+            with self._lock:
+                cursor = self._conn.cursor()
+                cursor.execute(
+                    "DELETE FROM conversations WHERE conversation_id = ?",
+                    (conversation_id,),
+                )
+                self._conn.commit()
+                rowcount = cursor.rowcount
+        except sqlite3.Error:
+            logger.exception("Error deleting conversation %s", conversation_id)
             return False
 
-        return cursor.rowcount > 0
-
+        return rowcount > 0
 
     def list_conversations(self) -> list[str]:
         """List all conversation IDs in the database.
@@ -145,19 +138,17 @@ class ConversationStorage:
 
         """
         try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-
-            cursor.execute("SELECT conversation_id FROM conversations")
-
-            result = cursor.fetchall()
-            conn.close()
-
-            return [row[0] for row in result]
-
-        except Exception as e:
-            print(f"Error listing conversations: {e}")
+            with self._lock:
+                cursor = self._conn.cursor()
+                cursor.execute("SELECT conversation_id FROM conversations")
+                result = cursor.fetchall()
+        except sqlite3.Error:
+            logger.exception("Error listing conversations")
             return []
 
+        return [row[0] for row in result]
 
-
+    def close(self) -> None:
+        """Close the underlying database connection."""
+        with self._lock:
+            self._conn.close()

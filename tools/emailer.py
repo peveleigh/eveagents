@@ -14,31 +14,47 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 class SMTPConfigError(ValueError):
-    """SMTP Config Error Class."""
+    """Raised when required SMTP environment variables are missing or invalid."""
 
-    def __init__(self) -> None:
-        """Initialize."""
-        super().__init__("SMTP environment variables not set.")
+    def __init__(self, missing: list[str]) -> None:
+        """Initialize with the list of missing variable names."""
+        self.missing = missing
+        super().__init__(
+            "Required SMTP environment variables not set: " + ", ".join(missing),
+        )
+
 
 class Emailer:
     """SMTP Email Class."""
 
     def __init__(self) -> None:
-        """Initialize."""
+        """Initialize and validate SMTP configuration from the environment."""
         self.smtp_host = os.environ.get("SMTP_HOST")
-        self.smtp_port = int(os.environ.get("SMTP_PORT"))
+        port_raw = os.environ.get("SMTP_PORT", "587")
         self.smtp_user = os.environ.get("SMTP_USER")
         self.smtp_password = os.environ.get("SMTP_PASSWORD")
         self.sender_email = os.environ.get("SENDER_EMAIL")
         self.recipient_email = os.environ.get("RECIPIENT_EMAIL")
 
-        if not all([
-            self.smtp_host,
-            self.smtp_port,
-            self.smtp_user,
-            self.smtp_password,
-        ]):
-            raise SMTPConfigError
+        missing: list[str] = []
+        if not self.smtp_host:
+            missing.append("SMTP_HOST")
+        if not self.smtp_user:
+            missing.append("SMTP_USER")
+        if not self.smtp_password:
+            missing.append("SMTP_PASSWORD")
+        if not self.sender_email:
+            missing.append("SENDER_EMAIL")
+        if not self.recipient_email:
+            missing.append("RECIPIENT_EMAIL")
+
+        try:
+            self.smtp_port = int(port_raw)
+        except (TypeError, ValueError) as exc:
+            raise SMTPConfigError(["SMTP_PORT"]) from exc
+
+        if missing:
+            raise SMTPConfigError(missing)
 
     def send_email(
         self,

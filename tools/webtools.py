@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 
 import requests
 from agents import function_tool
@@ -42,11 +43,9 @@ def web_search(
     }
 
     headers = {
-        "User-Agent": str(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "User-Agent": ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/91.0.4472.124 Safari/537.36",
-        ),
+            "Chrome/91.0.4472.124 Safari/537.36"),
     }
 
     instance = os.getenv("SEARXNG_URL")
@@ -83,31 +82,18 @@ def email_tool(
             bool: True if email was sent successfully, False otherwise
 
     """
-    recipient_email =  os.environ.get("RECIPIENT_EMAIL")
-    if attachment_path:
-        success = Emailer().send_email(
-            recipient_email,
-            subject,
-            body,
-            attachment_path,
-        )
-    else:
-        success = Emailer().send_email(
-            recipient_email,
-            subject,
-            body,
-        )
-    return success
+    return Emailer().send_email(subject, body, attachment_path)
 
 
 @function_tool
 def research(query: str) -> str:
     """Research a topic and send report to email."""
-    cmd = f'python tools/research_worker.py "{query}"'
-    subprocess.Popen(cmd, shell=True,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    start_new_session=True)
+    subprocess.Popen(
+        [sys.executable, "tools/research_worker.py", query],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
     return "Running a research report. It should be available in your inbox shortly."
 
 @function_tool

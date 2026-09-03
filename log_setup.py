@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 def setup_logging(
     log_level: int = logging.INFO,
     max_bytes: int = 10*1024*1024,  # 10MB
@@ -15,25 +16,32 @@ def setup_logging(
 ) -> logging.Logger:
     """Configure logging with rotation for both a main log file and an errors-only file.
 
+    Idempotent: if the root logger already has file handlers configured, the
+    existing configuration is left untouched. This makes it safe to call from
+    the application startup hook without risking duplicate handlers.
+
     Args:
         log_level: Overall logging level
         max_bytes: Maximum size per log file before rotation
         backup_count: Number of backup files to keep
 
+    Returns:
+        The configured root logger.
+
     """
-    log_dir: str = Path(os.getenv("LOG_DIR"))
-    main_log_file: str = os.getenv("MAIN_LOG_FILE")
-    error_log_file: str = os.getenv("ERROR_LOG_FILE")
+    logger = logging.getLogger()
+
+    # Avoid re-configuring if handlers are already in place.
+    if any(isinstance(h, RotatingFileHandler) for h in logger.handlers):
+        return logger
+
+    log_dir = Path(os.getenv("LOG_DIR", "logs"))
+    main_log_file = os.getenv("MAIN_LOG_FILE", "eveagents.log")
+    error_log_file = os.getenv("ERROR_LOG_FILE", "error.log")
     # Create log directory if it doesn't exist
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    # Get the root logger
-    logger = logging.getLogger()
     logger.setLevel(log_level)
-
-    # Clear any existing handlers
-    for handler in logger.handlers[:]:
-        logger.removeHandler(handler)
 
     # Create formatter
     formatter = logging.Formatter(

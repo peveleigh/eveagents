@@ -1,8 +1,14 @@
 __pycache__/
 venv/
+.venv/
 .vscode/
 research_reports/
 logs/
 .env
-test*.py
+/test*.py
 *.db
+
+# caches
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/

@@ -4,7 +4,6 @@ import os
 
 from agents import (
     Agent,
-    set_tracing_disabled,
 )
 from agents.extensions.models.litellm_model import LitellmModel
 from agents.model_settings import ModelSettings
@@ -13,10 +12,10 @@ from dotenv import load_dotenv
 from agentprompts import (
     cctv_prompt,
     eve_prompt,
-    executive_assistant_prompt,
+    get_executive_assistant_prompt,
+    get_meteorologist_prompt,
+    get_smart_home_prompt,
     knowledge_prompt,
-    meteorologist_prompt,
-    smart_home_prompt,
 )
 from tools.evellmtools import (
     cctv_tools,
@@ -37,7 +36,7 @@ model = LitellmModel(model=model_name, api_key=api_key)
 
 meteorologist_agent = Agent(
     name="Meteorologist Agent",
-    instructions=meteorologist_prompt,
+    instructions=lambda _ctx, _agent: get_meteorologist_prompt(),
     model=model,
     tools=[],
 )
@@ -51,14 +50,14 @@ cctv_agent = Agent(
 
 smart_home_agent = Agent(
     name="Smart Home Agent",
-    instructions=smart_home_prompt,
+    instructions=lambda _ctx, _agent: get_smart_home_prompt(),
     model=model,
     tools=smart_home_tools,
 )
 
 executive_assistant_agent = Agent(
     name="Executive Assistant Agent",
-    instructions=executive_assistant_prompt,
+    instructions=lambda _ctx, _agent: get_executive_assistant_prompt(),
     model=model,
     tools=executive_assistant_tools,
 )
